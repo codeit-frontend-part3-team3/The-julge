@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
 import clsx from 'clsx';
 
-import Header from '@/app/_components/Header';
+import Header from '@/app/_components/Header/Header';
 import Footer from '@/app/_components/Footer';
 import Button from '@/app/_components/Button';
 import Input from '@/app/_components/Input';
@@ -16,11 +16,15 @@ import ImageUploader from '@/app/_components/ImageUploader';
 import useModal from '@/app/_hooks/useModal';
 import { CATEGORIES, LOCATIONS } from '@/app/_constants/constants';
 import { registerShop } from '@/app/_api/owner_api';
+import Loading from '@/app/_components/Loding';
+import { useAuth } from '@/app/_hooks/useAuth';
 
 const PostStore = () => {
   const router = useRouter();
+  const { user } = useAuth();
   const { isOpen, openModal, closeModal } = useModal();
   const [shopId, setShopId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const {
     control,
     register,
@@ -35,21 +39,28 @@ const PostStore = () => {
   const imageUrl: string = watch('imageUrl');
 
   const onImageChange = (image: string) => setValue('imageUrl', image);
-
+  if (user?.type === 'employee') router.replace('/');
   const onImageDelete = () => {
     if (imageUrl) URL.revokeObjectURL(imageUrl);
     setValue('imageUrl', '');
   };
 
   const onSubmit = async (data: ShopRequest) => {
+    setIsLoading(true);
     try {
       const response = await registerShop(data);
       setShopId(response.data.item.id);
       openModal();
     } catch (err) {
       console.log('가게를 등록하는데 에러가 발생했어요:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  if (isLoading) {
+    return <Loading />;
+  }
 
   return (
     <>

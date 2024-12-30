@@ -8,7 +8,7 @@ import useAlbaTimeFormat from '@/app/_hooks/useAlbaTimeFormat';
 interface PostCardProps {
   name: string;
   startsAt?: string;
-  workhour?: string;
+  workhour?: number;
   address1: string;
   imageUrl: string;
   hourlyPay: number;
@@ -26,23 +26,23 @@ const PostCard: React.FC<PostCardProps> = ({
   originalHourlyPay,
   isPast,
 }) => {
-  const TimeFormat = useAlbaTimeFormat(startsAt, workhour);
+  const TimeFormat = useAlbaTimeFormat(startsAt, workhour?.toLocaleString());
   const percent =
     originalHourlyPay !== undefined
       ? Math.round(((hourlyPay - originalHourlyPay) / originalHourlyPay) * 100)
       : undefined;
-
+  const magam = startsAt ? new Date(startsAt) < new Date() : false;
   return (
     <div
       className={clsx(
-        'w-[171px] h-auto md:w-[332px] md:h-[360px] lg:w-[312px] lg:h-[349px] gap-3 p-3 border border-gray-200 rounded-xl bg-white',
+        'w-[171px] min-h-[265px] h-auto md:w-[332px] md:h-[360px] lg:w-[312px] lg:h-[349px] gap-3 p-3 border border-gray-200 rounded-xl bg-white',
       )}>
       <div className='relative w-[147px] h-[84px] md:w-[300px] md:h-[171px] lg:w-[280px] lg:h-[160px] rounded-xl overflow-hidden'>
         <Image src={imageUrl} alt={name} fill className='object-cover' />
         {isPast && (
           <div className='absolute inset-0 flex justify-center items-center bg-opacity-70 bg-black'>
             <span className='text-gray-300 inset-0 text-20b md:text-28b'>
-              지난 공고
+              {magam ? '지난 공고' : '마감 완료'}
             </span>
           </div>
         )}
@@ -83,7 +83,7 @@ const PostCard: React.FC<PostCardProps> = ({
               src={isPast ? '/image/path11-off.svg' : '/image/path11.svg'}
               alt='주소 아이콘'
               width={16}
-              height={20}
+              height={16}
               className='mr-1'
             />
 
@@ -97,7 +97,9 @@ const PostCard: React.FC<PostCardProps> = ({
                 ' text-18b md:text-24b lg:text-24b',
                 isPast ? 'text-gray-300' : 'text-black',
               )}>
-              {hourlyPay.toLocaleString()}원
+              {typeof hourlyPay === 'number' && !isNaN(hourlyPay)
+                ? `${hourlyPay.toLocaleString()}원`
+                : '정보 없음'}
             </h2>
             {percent !== undefined && percent > 0 && (
               <p className='flex md:hidden text-12 text-red-30'>
